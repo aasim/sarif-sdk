@@ -14,7 +14,7 @@ Each release entry below is prefixed with one of:
 Entries are terse by design: one line per change, present-tense behavior, complete but only essential data. No issue/PR archaeology or narrative — that history lives in the engineering system.
 
 ## **UNRELEASED**
-* BUG: `GHAzDO1017.ProvideRequiredPhysicalLocationProperties` reports an error when a result physical location omits `artifactLocation`, `artifactLocation.uri`, or `region`, matching GHAzDO upload requirements.
+* BUG: Fixed `GHAzDO1017.ProvideRequiredPhysicalLocationProperties`, which previously allowed result physical locations that GHAzDO rejects; it now reports an error when `artifactLocation`, `artifactLocation.uri`, or `region` is missing.
 
 * BUG: `ArtifactLocation.TryReconstructAbsoluteUri` returns false (leaving `resolvedUri` null) when a relative `uri`'s `../` segments escape the `originalUriBaseIds` base it resolves through, so enrichment no longer reads files outside a declared base.
 
