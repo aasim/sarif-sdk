@@ -373,6 +373,25 @@ namespace Microsoft.CodeAnalysis.Sarif
             return _hashDataCache[path];
         }
 
+        internal HashData CacheHashData(Uri uri, IEnumeratedArtifact artifact)
+        {
+            string path = uri.GetFilePath();
+            HashData hashes;
+
+            if (artifact.IsBinary)
+            {
+                using var stream = new MemoryStream(artifact.Bytes);
+                hashes = HashUtilities.ComputeHashes(stream, HashAlgorithms);
+            }
+            else
+            {
+                hashes = HashUtilities.ComputeHashesForText(artifact.Contents, HashAlgorithms);
+            }
+
+            _hashDataCache[path] = hashes;
+            return hashes;
+        }
+
         /// <summary>
         /// Returns the full text of the artifact at <paramref name="uri"/>, reading it from the
         /// file system on first access and caching the result. Returns <c>null</c> when the file

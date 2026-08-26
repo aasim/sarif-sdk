@@ -18,15 +18,54 @@ namespace Microsoft.CodeAnalysis.Sarif
 
         public static void LogFileSkipped(IAnalysisContext context, string skippedFile, string reason)
         {
+            LogFileSkipped(
+                context,
+                new Uri(skippedFile, UriKind.RelativeOrAbsolute),
+                reason);
+        }
+
+        public static void LogFileSkipped(
+            IAnalysisContext context,
+            IEnumeratedArtifact skippedArtifact,
+            string reason)
+        {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
+            if (skippedArtifact == null)
+            {
+                throw new ArgumentNullException(nameof(skippedArtifact));
+            }
+
+            if (context.DataToInsert.HasFlag(OptionallyEmittedData.Hashes) &&
+                skippedArtifact is ZipArchiveArtifact)
+            {
+                context.Logger.FileRegionsCache ??=
+                    new FileRegionsCache(fileSystem: context.FileSystem);
+
+                context.Logger.FileRegionsCache.CacheHashData(
+                    skippedArtifact.Uri,
+                    skippedArtifact);
+            }
+
+            LogFileSkipped(context, skippedArtifact.Uri, reason);
+        }
+
+        public static void LogFileSkipped(IAnalysisContext context, Uri skippedFileUri, string reason)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            string skippedFile = skippedFileUri.GetFilePath();
+
             // '{1}' was skipped as {reason}.
             context.Logger.LogConfigurationNotification(
                 Errors.CreateNotification(
-                    new Uri(skippedFile, UriKind.RelativeOrAbsolute),
+                    skippedFileUri,
                     Msg002_FileSkipped,
                     ruleId: null,
                     FailureLevel.Note,
